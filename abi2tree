@@ -1,0 +1,49 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const abi = require("ethjs-abi");
+
+const abi_path = process.argv[2];
+
+const json = JSON.parse(fs.readFileSync(abi_path))
+
+const get_fabi_name = fabi =>
+  "  function " + fabi.name + "(" + fabi.inputs.map(i => i.type + " " + i.name).join(", ") + ") external" + ((fabi.outputs || []).length > 0 ? (" returns (" + fabi.outputs.map(o => o.type + (o.name && (" " + o.name) || "") ).join(", ") + ")"): "") + ";"
+
+
+const interface_str = json
+  .map(get_fabi_name)
+
+
+const scafholding = json
+  .map(fabi => {
+    let sig = abi.encodeSignature(fabi);
+    let name = get_fabi_name(fabi)
+
+    return {
+      sig,
+      name
+    }
+  })
+  .sort((a, b) => parseInt(a.sig.slice(2), 16) - parseInt(b.sig.slice(2), 16))
+  // .map(e => e.sig)
+
+const build_f_branching = fabis => {
+  if(fabis.length > 1) {
+    let a = fabis.slice(0, Math.floor(fabis.length / 2))
+    let b = fabis.slice(Math.floor(fabis.length / 2))
+    let str_a = build_f_branching(a);
+    let str_b = build_f_branching(b);
+    let t = b[0];
+    if(a.length > 1) {
+      return `if lt(sig, ${t.sig}/* ${t.name} */) {\n  ${str_a.split("\n").join("\n  ")}\n}\n${str_b}`
+    } else {
+      return str_a + "\n" + str_b
+    }
+  } else {
+    let f = fabis[0];
+    return `if eq(sig, ${f.sig} /* ${f.name} */) {\n\n}`
+  }
+}
+
+console.log(build_f_branching(scafholding));
+
