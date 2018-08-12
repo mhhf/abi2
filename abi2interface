@@ -15,6 +15,7 @@ const interface_str = json
 
 
 const scafholding = json
+  .filter(fabi => fabi.type == "function")
   .map(fabi => {
     let sig = abi.encodeSignature(fabi);
     let name = get_fabi_name(fabi)

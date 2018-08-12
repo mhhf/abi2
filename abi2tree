@@ -7,7 +7,7 @@ const abi_path = process.argv[2];
 const json = JSON.parse(fs.readFileSync(abi_path))
 
 const get_fabi_name = fabi =>
-  "  function " + fabi.name + "(" + fabi.inputs.map(i => i.type + " " + i.name).join(", ") + ") external" + ((fabi.outputs || []).length > 0 ? (" returns (" + fabi.outputs.map(o => o.type + (o.name && (" " + o.name) || "") ).join(", ") + ")"): "") + ";"
+  "  function " + fabi.name + "(" + (fabi.inputs || []).map(i => i.type + " " + i.name).join(", ") + ") external" + ((fabi.outputs || []).length > 0 ? (" returns (" + (fabi.outputs || []).map(o => o.type + (o.name && (" " + o.name) || "") ).join(", ") + ")"): "") + ";"
 
 
 const interface_str = json
